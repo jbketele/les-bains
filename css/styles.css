@@ -57,17 +57,6 @@ nav {
     justify-content: space-between;
 }
 
-ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.logo {
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
 .nav-links {
     display: none;
     list-style: none;
@@ -75,6 +64,10 @@ ul {
 
 .nav-links a {
     font-size: 0.95rem;
+}
+
+section {
+    scroll-margin-top: 50px;
 }
 
 
