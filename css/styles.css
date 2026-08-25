@@ -223,13 +223,12 @@ section {
     margin-bottom: 0.25rem;
 }
 
-
-/* =========================
-   DESCRIPTION
-========================= */
+.description-content {
+    margin-top: 2rem;
+}
 
 .description-content p {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 
