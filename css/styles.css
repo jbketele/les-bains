@@ -214,6 +214,13 @@ section {
     margin-bottom: 0.25rem;
 }
 
+/* =========================
+   DESCRIPTION
+========================= */
+
+.description-content p {
+    margin-bottom: 2rem;
+}
 
 /* =========================
    GALERIE
