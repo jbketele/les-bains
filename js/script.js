@@ -1,8 +1,10 @@
-
 let unavailablePeriods = [];
 let currentDate = new Date();
 let selectedArrival = null;
 let selectedDeparture = null;
+
+const pricePerNight = 67;
+const touristTaxPerPersonPerNight = 1.85;
 
 const monthNames = [
     'janvier',
@@ -19,67 +21,90 @@ const monthNames = [
     'décembre'
 ];
 
+
+// =========================
+// CALENDRIER
+// =========================
+
 async function loadCalendar() {
+
     try {
-        const response = await fetch('/.netlify/functions/calendar');
+
+        const response =
+            await fetch('/.netlify/functions/calendar');
 
         if (!response.ok) {
-            throw new Error('Impossible de récupérer le calendrier.');
+            throw new Error(
+                'Impossible de récupérer le calendrier.'
+            );
         }
 
-        unavailablePeriods = await response.json();
+        unavailablePeriods =
+            await response.json();
 
-        console.log('Dates indisponibles :', unavailablePeriods);
+        console.log(
+            'Dates indisponibles :',
+            unavailablePeriods
+        );
 
         renderCalendar();
 
     } catch (error) {
-        console.error('Erreur calendrier :', error);
+
+        console.error(
+            'Erreur calendrier :',
+            error
+        );
     }
 }
 
 
 function renderCalendar() {
 
-    const calendarDays = document.getElementById('calendarDays');
-    const currentMonth = document.getElementById('currentMonth');
+    const calendarDays =
+        document.getElementById('calendarDays');
+
+    const currentMonth =
+        document.getElementById('currentMonth');
 
     if (!calendarDays || !currentMonth) {
         return;
     }
 
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    const year =
+        currentDate.getFullYear();
+
+    const month =
+        currentDate.getMonth();
 
     currentMonth.textContent =
         `${monthNames[month]} ${year}`;
+
     calendarDays.innerHTML = '';
 
-    // Premier jour du mois
+    const firstDay =
+        new Date(year, month, 1);
 
-    const firstDay = new Date(year, month, 1);
+    const daysInMonth =
+        new Date(year, month + 1, 0).getDate();
 
-    // Nombre de jours dans le mois
-
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // En JavaScript : dimanche = 0
-
-    // On veut lundi = 0
-
-    let firstDayIndex = firstDay.getDay() - 1;
+    let firstDayIndex =
+        firstDay.getDay() - 1;
 
     if (firstDayIndex < 0) {
-
         firstDayIndex = 6;
-
     }
 
+
     // Cases vides avant le 1er
+    for (
+        let i = 0;
+        i < firstDayIndex;
+        i++
+    ) {
 
-    for (let i = 0; i < firstDayIndex; i++) {
-
-        const emptyDay = document.createElement('div');
+        const emptyDay =
+            document.createElement('div');
 
         emptyDay.classList.add(
             'calendar-day',
@@ -87,29 +112,47 @@ function renderCalendar() {
         );
 
         calendarDays.appendChild(emptyDay);
-
     }
 
+
     // Jours du mois
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
 
-    for (let day = 1; day <= daysInMonth; day++) {
+        const date =
+            new Date(year, month, day);
 
-        const date = new Date(year, month, day);
-        const dateString = formatDate(date);
-        const dayElement = document.createElement('div');
-        dayElement.classList.add('calendar-day');
+        const dateString =
+            formatDate(date);
+
+        const dayElement =
+            document.createElement('div');
+
+        dayElement.classList.add(
+            'calendar-day'
+        );
+
         dayElement.textContent = day;
 
         const isUnavailable =
             isDateUnavailable(dateString);
 
+
         if (isUnavailable) {
 
-            dayElement.classList.add('unavailable');
+            dayElement.classList.add(
+                'unavailable'
+            );
 
         } else {
 
-            dayElement.classList.add('available');
+            dayElement.classList.add(
+                'available'
+            );
+
             dayElement.setAttribute(
                 'role',
                 'button'
@@ -122,55 +165,36 @@ function renderCalendar() {
 
             dayElement.addEventListener(
                 'click',
-
                 () => {
                     selectDate(dateString);
                 }
             );
-
-            dayElement.addEventListener(
-                'dblclick',
-
-                () => {
-
-                    if (
-
-                        dateString === selectedArrival ||
-                        dateString === selectedDeparture
-
-                    ) {
-
-                        selectedArrival = null;
-                        selectedDeparture = null;
-
-                        renderCalendar();
-                        updateCalendarInstruction();
-
-                    }
-                }
-            );
         }
 
-        // Date d'arrivée
 
-        if (dateString === selectedArrival) {
+        // Date d'arrivée
+        if (
+            dateString === selectedArrival
+        ) {
+
             dayElement.classList.add(
                 'selected-arrival'
             );
-
         }
 
-        // Date de départ
 
-        if (dateString === selectedDeparture) {
+        // Date de départ
+        if (
+            dateString === selectedDeparture
+        ) {
+
             dayElement.classList.add(
                 'selected-departure'
             );
-
         }
 
-        // Dates comprises entre arrivée et départ
 
+        // Dates comprises entre arrivée et départ
         if (
             selectedArrival &&
             selectedDeparture &&
@@ -183,25 +207,32 @@ function renderCalendar() {
             );
         }
 
-        calendarDays.appendChild(dayElement);
+
+        calendarDays.appendChild(
+            dayElement
+        );
     }
 }
+
 
 function selectDate(dateString) {
 
     // Aucune arrivée sélectionnée
     if (!selectedArrival) {
 
-        selectedArrival = dateString;
+        selectedArrival =
+            dateString;
 
         renderCalendar();
         updateCalendarInstruction();
-        updateReservationSummary();
+        updatePriceSummary();
+
         return;
     }
 
+
     // Clic sur la même date que l'arrivée
-    // = annulation de l'arrivée
+    // = annulation
     if (
         dateString === selectedArrival &&
         !selectedDeparture
@@ -211,15 +242,35 @@ function selectDate(dateString) {
 
         renderCalendar();
         updateCalendarInstruction();
-        updateReservationSummary();
+        updatePriceSummary();
+
         return;
     }
 
-    // Une arrivée est sélectionnée,
+
+    // Arrivée sélectionnée,
     // mais pas encore de départ
     if (!selectedDeparture) {
 
-        // Vérifie que toute la période est disponible
+        // Si la date est avant l'arrivée,
+        // elle devient la nouvelle arrivée
+        if (
+            dateString < selectedArrival
+        ) {
+
+            selectedArrival =
+                dateString;
+
+            renderCalendar();
+            updateCalendarInstruction();
+            updatePriceSummary();
+
+            return;
+        }
+
+
+        // Vérifie que toute la période
+        // est disponible
         if (
             !isRangeAvailable(
                 selectedArrival,
@@ -234,36 +285,35 @@ function selectDate(dateString) {
             return;
         }
 
-        // Si la date choisie est avant l'arrivée,
-        // elle devient la nouvelle arrivée
-        if (dateString < selectedArrival) {
 
-            selectedArrival = dateString;
-
-            renderCalendar();
-            updateCalendarInstruction();
-            updateReservationSummary();
-            return;
-        }
-
-        // La date est après l'arrivée
-        selectedDeparture = dateString;
+        // Deuxième sélection = départ
+        selectedDeparture =
+            dateString;
 
         renderCalendar();
         updateCalendarInstruction();
-        updateReservationSummary();
+        updatePriceSummary();
+
         return;
     }
 
+
     // Arrivée + départ déjà sélectionnés :
-    // un nouveau clic recommence une sélection
-    selectedArrival = dateString;
+    // nouveau clic = nouvelle sélection
+    selectedArrival =
+        dateString;
+
     selectedDeparture = null;
 
     renderCalendar();
     updateCalendarInstruction();
-    updateReservationSummary();
+    updatePriceSummary();
 }
+
+
+// =========================
+// INDICATION CALENDRIER
+// =========================
 
 function updateCalendarInstruction() {
 
@@ -276,20 +326,24 @@ function updateCalendarInstruction() {
         return;
     }
 
+
     if (!selectedArrival) {
 
         instruction.textContent =
             'Sélectionnez votre date d’arrivée';
-        return;
 
+        return;
     }
+
 
     if (!selectedDeparture) {
 
         instruction.textContent =
             'Sélectionnez votre date de départ';
+
         return;
     }
+
 
     const arrival =
         new Date(selectedArrival);
@@ -301,7 +355,9 @@ function updateCalendarInstruction() {
         `Séjour du ${formatDisplayDate(arrival)} au ${formatDisplayDate(departure)}`;
 }
 
+
 function formatDisplayDate(date) {
+
     return date.toLocaleDateString(
         'fr-FR',
         {
@@ -310,6 +366,160 @@ function formatDisplayDate(date) {
         }
     );
 }
+
+
+// =========================
+// CALCUL DU PRIX
+// =========================
+
+function calculateNights() {
+
+    if (
+        !selectedArrival ||
+        !selectedDeparture
+    ) {
+
+        return 0;
+    }
+
+    const arrival =
+        new Date(selectedArrival);
+
+    const departure =
+        new Date(selectedDeparture);
+
+    const difference =
+        departure.getTime() -
+        arrival.getTime();
+
+    return Math.round(
+        difference /
+        (1000 * 60 * 60 * 24)
+    );
+}
+
+
+function calculateNumberOfGuests() {
+
+    const guestsInput =
+        document.getElementById('voyageurs');
+
+    if (!guestsInput) {
+        return 1;
+    }
+
+    return Number(guestsInput.value) || 1;
+}
+
+function updatePriceSummary() {
+
+    const stayPriceElement =
+        document.getElementById(
+            'stayPrice'
+        );
+
+    const touristTaxElement =
+        document.getElementById(
+            'touristTax'
+        );
+
+    const totalPriceElement =
+        document.getElementById(
+            'totalPrice'
+        );
+
+    if (
+        !stayPriceElement ||
+        !touristTaxElement ||
+        !totalPriceElement
+    ) {
+
+        return;
+    }
+
+
+    const nights =
+        calculateNights();
+
+    const guests =
+        calculateNumberOfGuests();
+
+
+    // Pas encore de séjour sélectionné
+    if (!nights) {
+
+        stayPriceElement.textContent =
+            '0,00 €';
+
+        touristTaxElement.textContent =
+            '0,00 €';
+
+        totalPriceElement.textContent =
+            '0,00 €';
+
+        return;
+    }
+
+
+    // Prix de la location
+    const stayPrice =
+        nights * pricePerNight;
+
+
+    // Taxe de séjour
+    const touristTax =
+        Math.round(
+            nights *
+            guests *
+            touristTaxPerPersonPerNight *
+            100
+        ) / 100;
+
+
+    // Total
+    const total =
+        stayPrice +
+        touristTax;
+
+
+    stayPriceElement.textContent =
+        `${stayPrice.toFixed(2).replace('.', ',')} €`;
+
+    touristTaxElement.textContent =
+        `${touristTax.toFixed(2).replace('.', ',')} €`;
+
+    totalPriceElement.textContent =
+        `${total.toFixed(2).replace('.', ',')} €`;
+
+    const formStayPrice =
+        document.getElementById('formStayPrice');
+
+    const formTouristTax =
+        document.getElementById('formTouristTax');
+
+    const formTotalPrice =
+        document.getElementById('formTotalPrice');
+
+    if (formStayPrice) {
+        formStayPrice.value =
+            stayPrice.toFixed(2);
+    }
+
+    if (formTouristTax) {
+        formTouristTax.value =
+            touristTax.toFixed(2);
+    }
+
+    if (formTotalPrice) {
+        formTotalPrice.value =
+            total.toFixed(2);
+    }
+}
+
+
+// =========================
+// DISPONIBILITÉS
+// =========================
 
 function isRangeAvailable(
     startDate,
@@ -322,6 +532,7 @@ function isRangeAvailable(
     const end =
         new Date(endDate);
 
+
     while (current < end) {
 
         const dateString =
@@ -329,21 +540,23 @@ function isRangeAvailable(
 
         if (
             isDateUnavailable(dateString)
-
         ) {
+
             return false;
         }
 
         current.setDate(
             current.getDate() + 1
         );
-
     }
-    return true;
 
+
+    return true;
 }
 
+
 function formatDate(date) {
+
     const year =
         date.getFullYear();
 
@@ -360,28 +573,30 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
+
 function isDateUnavailable(dateString) {
 
     return unavailablePeriods.some(
         period => {
+
             return (
                 dateString >= period.start &&
                 dateString < period.end
-
             );
-
         }
-
     );
-
 }
 
+
+// =========================
+// NAVIGATION DES MOIS
+// =========================
+
 // Mois précédent
-
-document.getElementById('prevMonth')
-
-    ?.addEventListener('click',
-
+document
+    .getElementById('prevMonth')
+    ?.addEventListener(
+        'click',
         () => {
 
             currentDate.setMonth(
@@ -390,43 +605,49 @@ document.getElementById('prevMonth')
 
             renderCalendar();
         }
-
     );
 
+
 // Mois suivant
-
 document
-
     .getElementById('nextMonth')
-
     ?.addEventListener(
         'click',
         () => {
+
             currentDate.setMonth(
                 currentDate.getMonth() + 1
             );
+
             renderCalendar();
         }
-
     );
 
-// Remplit les dates dans le formulaire de réservation
+
+// =========================
+// RÉSERVATION
+// =========================
 
 function fillReservationDates() {
 
     const arrivalInput =
-        document.getElementById('arrivee');
+        document.getElementById(
+            'arrivee'
+        );
 
     const departureInput =
-        document.getElementById('depart');
+        document.getElementById(
+            'depart'
+        );
 
     if (
         !arrivalInput ||
         !departureInput
-
     ) {
+
         return;
     }
+
 
     arrivalInput.value =
         selectedArrival || '';
@@ -434,62 +655,100 @@ function fillReservationDates() {
     departureInput.value =
         selectedDeparture || '';
 
+    updatePriceSummary();
 }
 
-// Ouverture du modal de réservation
 
-document.getElementById('openReservationModal')
-
+// Ouverture du modal
+document
+    .getElementById(
+        'openReservationModal'
+    )
     ?.addEventListener(
         'click',
         () => {
+
             fillReservationDates();
         }
     );
 
-function calculateNights() {
+// =========================
+// COMPTEUR VOYAGEURS
+// =========================
 
-    if (!selectedArrival || !selectedDeparture) {
-        return 0;
+const guestCountElement =
+    document.getElementById('guestCount');
+
+const guestsInput =
+    document.getElementById('voyageurs');
+
+const guestMinusButton =
+    document.getElementById('guestMinus');
+
+const guestPlusButton =
+    document.getElementById('guestPlus');
+
+
+function updateGuestCount(guests) {
+
+    console.log('updateGuestCount appelée avec :', guests);
+    console.log(
+        'Valeur actuelle affichée :',
+        guestCountElement?.textContent
+    );
+
+    if (!guestCountElement || !guestsInput) {
+        return;
     }
 
-    const arrival = new Date(selectedArrival);
-    const departure = new Date(selectedDeparture);
+    guests = Math.max(1, Math.min(4, guests));
 
-    const difference =
-        departure.getTime() - arrival.getTime();
+    console.log('Valeur après limite :', guests);
 
-    return Math.round(
-        difference / (1000 * 60 * 60 * 24)
+    guestCountElement.textContent = guests;
+    guestsInput.value = guests;
+
+    updatePriceSummary();
+
+    console.log(
+        'Valeur finale affichée :',
+        guestCountElement.textContent
     );
 }
 
-function updateReservationSummary() {
 
-    const summary =
-        document.getElementById('reservationSummary');
+guestMinusButton?.addEventListener(
+    'click',
+    () => {
 
-    if (!summary) {
-        return;
+        const guests =
+            Number(guestCountElement.textContent) || 1;
+
+        updateGuestCount(guests - 1);
     }
+);
 
-    if (!selectedArrival || !selectedDeparture) {
 
-        summary.textContent = '';
+guestPlusButton?.addEventListener('click', () => {
 
-        return;
-    }
+    console.log('--- CLICK PLUS ---');
 
-    const nights = calculateNights();
+    const guests =
+        Number(guestCountElement.textContent) || 1;
 
-    const arrival =
-        new Date(selectedArrival);
+    console.log('Avant + :', guests);
 
-    const departure =
-        new Date(selectedDeparture);
+    updateGuestCount(guests + 1);
 
-    summary.textContent =
-        `Séjour du ${formatDisplayDate(arrival)} au ${formatDisplayDate(departure)} — ${nights} ${nights > 1 ? 'nuits' : 'nuit'}`;
-}
+    console.log(
+        'Après updateGuestCount :',
+        guestCountElement.textContent
+    );
+});
+
+
+// =========================
+// LANCEMENT
+// =========================
 
 loadCalendar();

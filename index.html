@@ -323,6 +323,27 @@
 
                 </div>
 
+                <div id="priceSummary" class="price-summary">
+                    <div class="price-line">
+                        <span>Prix du séjour</span>
+                        <span id="stayPrice">0,00 €</span>
+                    </div>
+
+                    <input type="hidden" name="prix-sejour" id="formStayPrice">
+                    <input type="hidden" name="taxe-sejour" id="formTouristTax">
+                    <input type="hidden" name="total" id="formTotalPrice">
+
+                    <div class="price-line">
+                        <span>Taxe de séjour</span>
+                        <span id="touristTax">0,00 €</span>
+                    </div>
+
+                    <div class="price-line price-total">
+                        <span>Total</span>
+                        <span id="totalPrice">0,00 €</span>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Nombre de voyageurs</label>
 
@@ -396,32 +417,6 @@
                 document.body.style.overflow = '';
             }
         });
-
-        const guestMinus = document.getElementById('guestMinus');
-        const guestPlus = document.getElementById('guestPlus');
-        const guestCount = document.getElementById('guestCount');
-        const voyageurs = document.getElementById('voyageurs');
-
-        let guests = 1;
-
-        guestPlus.addEventListener('click', () => {
-            if (guests < 8) {
-                guests++;
-                updateGuests();
-            }
-        });
-
-        guestMinus.addEventListener('click', () => {
-            if (guests > 1) {
-                guests--;
-                updateGuests();
-            }
-        });
-
-        function updateGuests() {
-            guestCount.textContent = guests;
-            voyageurs.value = guests;
-        }
     </script>
     <script src="./js/script.js"></script>
 </body>
