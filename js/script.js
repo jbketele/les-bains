@@ -752,3 +752,65 @@ guestPlusButton?.addEventListener('click', () => {
 // =========================
 
 loadCalendar();
+
+// =========================
+// ENVOI DE LA DEMANDE
+// =========================
+
+const reservationForm =
+    document.querySelector('form[name="reservation"]');
+
+reservationForm?.addEventListener('submit', async (event) => {
+
+    event.preventDefault();
+
+    const submitButton =
+        reservationForm.querySelector('button[type="submit"]');
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Envoi en cours...';
+
+    try {
+
+        const formData =
+            new FormData(reservationForm);
+
+        await fetch('/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(formData).toString()
+        });
+
+        reservationForm.innerHTML = `
+            <div class="reservation-success">
+                <h3>Demande envoyée !</h3>
+
+                <p>
+                    Votre demande de réservation a bien été envoyée.
+                </p>
+
+                <p>
+                    Nous allons vérifier les disponibilités
+                    et revenir vers vous rapidement.
+                </p>
+            </div>
+        `;
+
+    } catch (error) {
+
+        console.error(
+            'Erreur lors de l’envoi :',
+            error
+        );
+
+        submitButton.disabled = false;
+        submitButton.textContent =
+            'Envoyer ma demande';
+
+        alert(
+            'Une erreur est survenue lors de l’envoi. Veuillez réessayer.'
+        );
+    }
+});
