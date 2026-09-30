@@ -862,3 +862,7 @@ footer p {
     border-radius: 50%;
     background: currentColor;
 }
+
+.calendar-instruction {
+    margin-bottom: 20px;
+}
