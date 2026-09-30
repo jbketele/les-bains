@@ -845,3 +845,20 @@ footer p {
     background-color: #dce7ec;
     color: #034462;
 }
+
+.calendar-day.today {
+    position: relative;
+    font-weight: 700;
+}
+
+.calendar-day.today::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}

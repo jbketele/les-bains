@@ -137,9 +137,24 @@ function renderCalendar() {
 
         dayElement.textContent = day;
 
-        const isUnavailable =
-            isDateUnavailable(dateString);
+        const today =
+            new Date();
 
+        const todayString =
+            formatDate(today);
+
+        const isPast =
+            dateString < todayString;
+
+        const isToday =
+            dateString === todayString;
+
+        const isUnavailable =
+            isDateUnavailable(dateString) || isPast;
+
+        if (isToday) {
+            dayElement.classList.add('today');
+        }
 
         if (isUnavailable) {
 
