@@ -4,7 +4,11 @@ let selectedArrival = null;
 let selectedDeparture = null;
 
 const pricePerNight = 67;
-const touristTaxPerPersonPerNight = 1.85;
+
+// Taxe de séjour : 5 % du prix de la nuitée par personne
+// + 10 % de taxe additionnelle départementale
+const touristTaxRate = 0.05;
+const departmentTaxRate = 0.10;
 
 const monthNames = [
     'janvier',
@@ -482,20 +486,44 @@ function updatePriceSummary() {
 
 
     // Taxe de séjour
-    const touristTax =
+    const pricePerPersonPerNight =
+        pricePerNight / guests;
+
+    // 5 % de la part de la nuitée par personne
+    const baseTax =
         Math.round(
-            nights *
-            guests *
-            touristTaxPerPersonPerNight *
+            pricePerPersonPerNight *
+            0.05 *
             100
         ) / 100;
 
+    // Taxe additionnelle départementale de 10 %
+    const departmentTax =
+        Math.round(
+            baseTax *
+            0.10 *
+            100
+        ) / 100;
+
+    // Taxe de séjour par personne et par nuit
+    const touristTaxPerPersonPerNight =
+        Math.round(
+            (baseTax + departmentTax) *
+            100
+        ) / 100;
+
+    // Taxe totale
+    const touristTax =
+        Math.round(
+            touristTaxPerPersonPerNight *
+            guests *
+            nights *
+            100
+        ) / 100;
 
     // Total
     const total =
-        stayPrice +
-        touristTax;
-
+        stayPrice + touristTax;
 
     stayPriceElement.textContent =
         `${stayPrice.toFixed(2).replace('.', ',')} €`;
